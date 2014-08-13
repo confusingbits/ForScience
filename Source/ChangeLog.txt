@@ -1,0 +1,17 @@
+﻿v 0.24.2-1 Bug fixes
+- Science mode support
+- Disabled when no science container is found. (temporary)
+
+v 0.24-1 - Experiment Filtering
+- Experiments without available science will no longer run automatically. (Usually.)
+- Plugin and window are disabled in sandbox mode.
+
+v 0.23.5-2 - Experiment Automation
+
+ - Experiments will now run automatically when enabled.
+
+v0.23.5-1 - Initial WIP release.
+
+- Automatic science container selection.
+- Automatic science experiment collection.
+- Temporary user interface to toggle automatic science data collection
