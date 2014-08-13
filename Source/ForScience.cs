@@ -11,11 +11,11 @@ namespace ForScience
     public class ForScience : MonoBehaviour
     {
         //GUI
-        private GUIStyle windowStyle, labelStyle, toggleStyle;
+        private GUIStyle windowStyle, labelStyle, toggleStyle, textStyle;
         private Rect windowPosition = new Rect(0f, 200f, 0f, 0f);
         private bool initStyle = false;
 
-        // states
+        //states
 
         bool initState = false;
         Vessel stateVessel = null;
@@ -23,11 +23,8 @@ namespace ForScience
         string stateBiome = null;
         ExperimentSituations stateSituation = 0;
 
-        //global variables
+        //current
 
-        bool IsDataToCollect = false;
-        bool autoTransfer = false;
-        bool dataIsInContainer = false;
         Vessel currentVessel = null;
         CelestialBody currentBody = null;
         string currentBiome = null;
@@ -36,85 +33,134 @@ namespace ForScience
         List<ModuleScienceExperiment> experimentList = null;
         ModuleScienceContainer container = null;
 
+        //thread control
+
+        bool runOnce = false;
+        bool IsDataToCollect = false;
+        bool autoTransfer = false;
+        bool dataIsInContainer = false;
 
         private void Start()
         {
-            if (!initStyle) InitStyle();
-            RenderingManager.AddToPostDrawQueue(0, OnDraw);
+            if ((HighLogic.CurrentGame.Mode == Game.Modes.CAREER | HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX) & !initStyle) InitStyle();
 
-            if (!initState)
-            {
-                UpdateStates();
-            }
+            RenderingManager.AddToPostDrawQueue(0, OnDraw);
         }
 
         private void Update()
         {
-            UpdateCurrent();
-            
-            if (!currentVessel.isEVA & autoTransfer & IsDataToCollect) ManageScience();            
-
-            if (!currentVessel.isEVA & autoTransfer & (currentVessel != stateVessel | currentSituation != stateSituation | currentBody != stateBody | currentBiome != stateBiome))
+            if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER | HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX)
             {
-                RunScience();
-                UpdateStates();
+                if (initState)
+                {
+                    UpdateCurrent();
+                    if (!currentVessel.isEVA & autoTransfer)
+                    {
+
+                        if (IsDataToCollect) TransferScience();
+                        else if (runOnce | !IsDataToCollect & (currentVessel != stateVessel | currentSituation != stateSituation | currentBody != stateBody | currentBiome != stateBiome))
+                        {
+                            Debug.Log("[For Science] Vessel in new experimental situation.");
+                            RunScience();
+                            UpdateStates();
+                            runOnce = false;
+                        }
+                        else FindDataToTransfer();
+
+                    }
+
+                }
+                else
+                {
+                    UpdateCurrent();
+                    UpdateStates();
+                    TransferScience();
+                    initState = true;
+                }
             }
         }
 
         private void OnDraw()
         {
-            if (HighLogic.LoadedScene == GameScenes.FLIGHT)
+            if (HighLogic.LoadedScene == GameScenes.FLIGHT & (HighLogic.CurrentGame.Mode == Game.Modes.CAREER | HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX))
             {
                 windowPosition = GUILayout.Window(104234, windowPosition, MainWindow, "For Science", windowStyle);
             }
         }
 
-        private void ManageScience()
+        private void FindDataToTransfer()
+        {
+            foreach (ModuleScienceExperiment currentExperiementCollectData in experimentList)
+            {
+                if (currentExperiementCollectData.GetData().Count() == 1) IsDataToCollect = true;
+            }
+        }
+
+        private void TransferScience()
         {
             containerList = currentVessel.FindPartModulesImplementing<ModuleScienceContainer>();
             experimentList = currentVessel.FindPartModulesImplementing<ModuleScienceExperiment>();
 
             if (container == null) container = containerList[0];
+
+            Debug.Log("[For Science] Tranfering science to container.");
             container.StoreData(experimentList.Cast<IScienceDataContainer>().ToList(), true);
+
+            IsDataToCollect = false;
         }
 
         private void RunScience()
         {
             foreach (ModuleScienceExperiment currentExperiment in experimentList)
             {
-                if (currentExperiment.rerunnable & currentExperiment.experiment.IsAvailableWhile(currentSituation, currentBody))
-                {
-                    Debug.Log("checking experiment: " + currentExperiment.name);
+                var fixBiome = string.Empty;
 
-                    dataIsInContainer = false;
+                if (currentExperiment.experiment.BiomeIsRelevantWhile(currentSituation)) fixBiome = currentBiome;
+
+                var currentScienceSubject = ResearchAndDevelopment.GetExperimentSubject(currentExperiment.experiment, currentSituation, currentBody, fixBiome);
+                var currentScienceValue = ResearchAndDevelopment.GetScienceValue(currentExperiment.experiment.baseValue * currentExperiment.experiment.dataScale, currentScienceSubject);
+
+                Debug.Log("[For Science] Checking experiment: " + currentScienceSubject.id);
+
+                if (!currentExperiment.rerunnable)
+                {
+                    Debug.Log("[For Science] Skipping: Experiment is not repeatable.");
+                }
+                else if (!currentExperiment.experiment.IsAvailableWhile(currentSituation, currentBody))
+                {
+                    Debug.Log("[For Science] Skipping: Experiment is not available.");
+                }
+                else if (currentScienceValue < 1)
+                {
+                    Debug.Log("[For Science] Skipping: No more science is available.");
+                }
+                else
+                {
 
                     foreach (ScienceData data in container.GetData())
                     {
-                        if (data.subjectID == (currentExperiment.experimentID + "@" + currentBody.name + currentSituation + currentVessel.landedAt).Replace(" ", string.Empty))
+                        if (currentScienceSubject.id.Contains(data.subjectID))
                         {
-                            //Debug.Log("experiment: " + (currentExperiment.experimentID + "@" + currentBody.name + currentSituation + v.landedAt).Replace(" ", string.Empty));
-                            //Debug.Log("data:" + data.subjectID);
+                            Debug.Log("[For Science]  Skipping: Found existing experiment data: " + data.subjectID);
                             dataIsInContainer = true;
+                            break;
                         }
-                        else if (data.subjectID == (currentExperiment.experimentID + "@" + currentBody.name + currentSituation + currentBiome).Replace(" ", string.Empty))
+
+                        else
                         {
-                            //Debug.Log("experiment: " + (currentExperiment.experimentID + "@" + currentBody.name + currentSituation + currentBiome).Replace(" ", string.Empty));
-                            //Debug.Log("data:" + data.subjectID);
-                            dataIsInContainer = true;
-                        }
-                        else if (data.subjectID == (currentExperiment.experimentID + "@" + currentBody.name + currentSituation).Replace(" ", string.Empty))
-                        {
-                            //Debug.Log("experiment: " + (currentExperiment.experimentID + "@" + currentBody.name + currentSituation).Replace(" ", string.Empty));
-                            //Debug.Log("data:" + data.subjectID);
-                            dataIsInContainer = true;
+                            dataIsInContainer = false;
+                            UpdateCurrent();
                         }
                     }
-                    if (!dataIsInContainer & currentExperiment.GetScienceCount() == 0)
+
+                    if (!dataIsInContainer)
                     {
-                        Debug.Log("Running experiment: " + currentExperiment.name);
+                        Debug.Log("[For Science] Science available is " + currentScienceValue);
+                        Debug.Log("[For Science] Running experiment: " + currentExperiment.experiment.id);
                         currentExperiment.DeployExperiment();
                         IsDataToCollect = true;
                     }
+
                 }
             }
         }
@@ -123,18 +169,20 @@ namespace ForScience
         {
             currentVessel = FlightGlobals.ActiveVessel;
             currentBody = currentVessel.mainBody;
-            currentBiome = ScienceUtil.GetExperimentBiome(currentBody, currentVessel.latitude, currentVessel.longitude);
-            currentSituation = ScienceUtil.GetExperimentSituation(currentVessel);            
+            currentSituation = ScienceUtil.GetExperimentSituation(currentVessel);
+            if (currentVessel.landedAt != string.Empty)
+            {
+                currentBiome = currentVessel.landedAt;
+            }
+            else currentBiome = ScienceUtil.GetExperimentBiome(currentBody, currentVessel.latitude, currentVessel.longitude);
         }
 
         private void UpdateStates()
         {
-            stateVessel = FlightGlobals.ActiveVessel;
-            stateBody = currentVessel.mainBody;
-            stateBiome = ScienceUtil.GetExperimentBiome(currentBody, currentVessel.latitude, currentVessel.longitude);
-            stateSituation = ScienceUtil.GetExperimentSituation(currentVessel);
-
-            initState = true;
+            stateVessel = currentVessel;
+            stateBody = currentBody;
+            stateSituation = currentSituation;
+            stateBiome = currentBiome;
         }
 
         private void InitStyle()
@@ -147,22 +195,27 @@ namespace ForScience
 
             toggleStyle = new GUIStyle(HighLogic.Skin.toggle);
 
+            textStyle = new GUIStyle(HighLogic.Skin.label);
+
             initStyle = true;
         }
 
         private void MainWindow(int windowID)
         {
             GUILayout.BeginHorizontal();
-            if (GUILayout.Toggle(autoTransfer, "Automatic data collection", toggleStyle))
+            if (currentVessel.FindPartModulesImplementing<ModuleScienceContainer>().Count() == 0)
             {
-                if (!autoTransfer)
-                {
-                    ManageScience();
-                    RunScience();
-                }
+                GUILayout.TextField("No science containers available.", textStyle);
+            }
+            else if (GUILayout.Toggle(autoTransfer, "Automatic data collection", toggleStyle))
+            {
                 autoTransfer = true;
             }
-            else autoTransfer = false;
+            else
+            {
+                autoTransfer = false;
+                runOnce = true;
+            }
             GUILayout.EndHorizontal();
 
             GUI.DragWindow();
