@@ -1,4 +1,12 @@
-﻿v 0.24.2-1 Bug fixes
+﻿v 1.0 - Release Version!
+- Reset goo/scijr when scientist is onboard
+- Much improved biome detection and throttling.
+- Suppressed (actually bypassed altogether) experiment result windows
+- Suppressed duplicate results.
+- consolidated data on docking.
+- Many code improvements
+
+v 0.24.2-1 Bug fixes
 - Science mode support
 - Disabled when no science container is found. (temporary)
 
