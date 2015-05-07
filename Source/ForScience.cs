@@ -66,7 +66,7 @@ namespace ForScience
             }
             else if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER | HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX) // only modes with science mechanics will run
             {
-                if (autoTransfer & !currentVessel().isEVA) // if we've enabled the app to run, on by default, the toolbar toggles this. Also, check to see if we are NOT eva (controlling a kerbal)
+                if (autoTransfer) // if we've enabled the app to run, on by default, the toolbar toggles this. Also, check to see if we are NOT eva (controlling a kerbal)
                 {
                     TransferScience();// always move experiment data to science container, mostly for manual experiments
                     if (StatesHaveChanged()) // if we are in a new state, we will check and run experiments
@@ -185,53 +185,65 @@ namespace ForScience
             return ScienceUtil.GetExperimentSituation(FlightGlobals.ActiveVessel);
         }
 
-        private string currentBiome() // we keep a running check on the vessels state to see if we've changed biomes.
+        public static string currentBiome()
         {
-            if (currentVessel().landedAt != string.Empty) // more string emptys for weird biomes
-            {
-                if (currentVessel().landedAt == "KSC_Pad_Grounds") return "LaunchPad"; // handle a bunch of special biomes around ksc
-                else if (currentVessel().landedAt == "KSC_LaunchPad_Platform") return "LaunchPad";
-                else if (currentVessel().landedAt == "KSC_Pad_Flag_Pole") return "LaunchPad";
-                else if (currentVessel().landedAt == "KSC_Pad_Water_Tower") return "LaunchPad";
-                else if (currentVessel().landedAt == "KSC_Pad_Tanks") return "LaunchPad";
-                else if (currentVessel().landedAt == "KSC_Pad_Round_Tank") return "LaunchPad";
-                else if (currentVessel().landedAt == "KSC_SPH_Grounds") return "SPH";
-                else if (currentVessel().landedAt == "KSC_SPH_Round_Tank") return "SPHRoundTank";
-                else if (currentVessel().landedAt == "KSC_SPH_Main_Building") return "SPHMainBuilding";
-                else if (currentVessel().landedAt == "KSC_SPH_Water_Tower") return "SPHWaterTower";
-                else if (currentVessel().landedAt == "KSC_SPH_Tanks") return "SPHTanks";
-                else if (currentVessel().landedAt == "KSC_Crawlerway") return "Crawlerway";
-                else if (currentVessel().landedAt == "KSC_Mission_Control_Grounds") return "MissionControl";
-                else if (currentVessel().landedAt == "KSC_Mission_Control") return "MissionControl";
-                else if (currentVessel().landedAt == "KSC_VAB_Grounds") return "VAB";
-                else if (currentVessel().landedAt == "KSC_VAB_Round_Tank") return "VABRoundTank";
-                else if (currentVessel().landedAt == "KSC_VAB_Pod_Memorial") return "VABPodMemorial";
-                else if (currentVessel().landedAt == "KSC_VAB_Main_Building") return "VABMainBuilding";
-                else if (currentVessel().landedAt == "KSC_VAB_Tanks") return "VABTanks";
-                else if (currentVessel().landedAt == "KSC_Astronaut_Complex_Grounds") return "AstronautComplex"; // yes, it is messy
-                else if (currentVessel().landedAt == "KSC_Astronaut_Complex") return "AstronautComplex";
-                else if (currentVessel().landedAt == "KSC_Administration_Grounds") return "Administration";
-                else if (currentVessel().landedAt == "KSC_Administration") return "Administration";
-                else if (currentVessel().landedAt == "KSC_Flag_Pole") return "FlagPole";
-                else if (currentVessel().landedAt == "KSC_R&D_Grounds") return "R&D";
-                else if (currentVessel().landedAt == "KSC_R&D_Corner_Lab") return "R&DCornerLab";
-                else if (currentVessel().landedAt == "KSC_R&D_Central_Building") return "R&DCentralBuilding";
-                else if (currentVessel().landedAt == "KSC_R&D_Wind_Tunnel") return "R&DWindTunnel";
-                else if (currentVessel().landedAt == "KSC_R&D_Main_Building") return "R&DMainBuilding";
-                else if (currentVessel().landedAt == "KSC_R&D_Tanks") return "R&DTanks";
-                else if (currentVessel().landedAt == "KSC_R&D_Observatory") return "R&DObservatory";
-                else if (currentVessel().landedAt == "KSC_R&D_Side_Lab") return "R&DSideLab";
-                else if (currentVessel().landedAt == "KSC_R&D_Observatory") return "R&DObservatory";
-                else if (currentVessel().landedAt == "KSC_R&D_Small_Lab") return "R&DSmallLab";
-                else if (currentVessel().landedAt == "KSC_Tracking_Station_Grounds") return "TrackingStation";
-                else if (currentVessel().landedAt == "KSC_Tracking_Station_Hub") return "TrackingStationHub";
-                else if (currentVessel().landedAt == "KSC_Tracking_Station_Dish_East") return "TrackingStationDishEast";
-                else if (currentVessel().landedAt == "KSC_Tracking_Station_Dish_South") return "TrackingStationDishSouth";
-                else if (currentVessel().landedAt == "KSC_Tracking_Station_Dish_North") return "TrackingStationDishNorth"; // very messy
-                else return currentVessel().landedAt; // you're still here?
-            }
-            else return ScienceUtil.GetExperimentBiome(currentBody(), currentVessel().latitude, currentVessel().longitude); //else give up, err...return squad's *cough* highly accurate biome *cough*
+            if (FlightGlobals.ActiveVessel != null)
+                if (FlightGlobals.ActiveVessel.mainBody.BiomeMap != null)
+                    return !string.IsNullOrEmpty(FlightGlobals.ActiveVessel.landedAt)
+                                    ? Vessel.GetLandedAtString(FlightGlobals.ActiveVessel.landedAt)
+                                    : ScienceUtil.GetExperimentBiome(FlightGlobals.ActiveVessel.mainBody,
+                                                FlightGlobals.ActiveVessel.latitude, FlightGlobals.ActiveVessel.longitude);
+
+            return string.Empty;
         }
+
+        //private string currentBiome() // we keep a running check on the vessels state to see if we've changed biomes.
+        //{
+        //    if (currentVessel().landedAt != string.Empty) // more string emptys for weird biomes
+        //    {
+        //        if (currentVessel().landedAt == "KSC_Pad_Grounds") return "LaunchPad"; // handle a bunch of special biomes around ksc
+        //        else if (currentVessel().landedAt == "KSC_LaunchPad_Platform") return "LaunchPad";
+        //        else if (currentVessel().landedAt == "KSC_Pad_Flag_Pole") return "LaunchPad";
+        //        else if (currentVessel().landedAt == "KSC_Pad_Water_Tower") return "LaunchPad";
+        //        else if (currentVessel().landedAt == "KSC_Pad_Tanks") return "LaunchPad";
+        //        else if (currentVessel().landedAt == "KSC_Pad_Round_Tank") return "LaunchPad";
+        //        else if (currentVessel().landedAt == "KSC_SPH_Grounds") return "SPH";
+        //        else if (currentVessel().landedAt == "KSC_SPH_Round_Tank") return "SPHRoundTank";
+        //        else if (currentVessel().landedAt == "KSC_SPH_Main_Building") return "SPHMainBuilding";
+        //        else if (currentVessel().landedAt == "KSC_SPH_Water_Tower") return "SPHWaterTower";
+        //        else if (currentVessel().landedAt == "KSC_SPH_Tanks") return "SPHTanks";
+        //        else if (currentVessel().landedAt == "KSC_Crawlerway") return "Crawlerway";
+        //        else if (currentVessel().landedAt == "KSC_Mission_Control_Grounds") return "MissionControl";
+        //        else if (currentVessel().landedAt == "KSC_Mission_Control") return "MissionControl";
+        //        else if (currentVessel().landedAt == "KSC_VAB_Grounds") return "VAB";
+        //        else if (currentVessel().landedAt == "KSC_VAB_Round_Tank") return "VABRoundTank";
+        //        else if (currentVessel().landedAt == "KSC_VAB_Pod_Memorial") return "VABPodMemorial";
+        //        else if (currentVessel().landedAt == "KSC_VAB_Main_Building") return "VABMainBuilding";
+        //        else if (currentVessel().landedAt == "KSC_VAB_Tanks") return "VABTanks";
+        //        else if (currentVessel().landedAt == "KSC_Astronaut_Complex_Grounds") return "AstronautComplex"; // yes, it is messy
+        //        else if (currentVessel().landedAt == "KSC_Astronaut_Complex") return "AstronautComplex";
+        //        else if (currentVessel().landedAt == "KSC_Administration_Grounds") return "Administration";
+        //        else if (currentVessel().landedAt == "KSC_Administration") return "Administration";
+        //        else if (currentVessel().landedAt == "KSC_Flag_Pole") return "FlagPole";
+        //        else if (currentVessel().landedAt == "KSC_R&D_Grounds") return "R&D";
+        //        else if (currentVessel().landedAt == "KSC_R&D_Corner_Lab") return "R&DCornerLab";
+        //        else if (currentVessel().landedAt == "KSC_R&D_Central_Building") return "R&DCentralBuilding";
+        //        else if (currentVessel().landedAt == "KSC_R&D_Wind_Tunnel") return "R&DWindTunnel";
+        //        else if (currentVessel().landedAt == "KSC_R&D_Main_Building") return "R&DMainBuilding";
+        //        else if (currentVessel().landedAt == "KSC_R&D_Tanks") return "R&DTanks";
+        //        else if (currentVessel().landedAt == "KSC_R&D_Observatory") return "R&DObservatory";
+        //        else if (currentVessel().landedAt == "KSC_R&D_Side_Lab") return "R&DSideLab";
+        //        else if (currentVessel().landedAt == "KSC_R&D_Observatory") return "R&DObservatory";
+        //        else if (currentVessel().landedAt == "KSC_R&D_Small_Lab") return "R&DSmallLab";
+        //        else if (currentVessel().landedAt == "KSC_Tracking_Station_Grounds") return "TrackingStation";
+        //        else if (currentVessel().landedAt == "KSC_Tracking_Station_Hub") return "TrackingStationHub";
+        //        else if (currentVessel().landedAt == "KSC_Tracking_Station_Dish_East") return "TrackingStationDishEast";
+        //        else if (currentVessel().landedAt == "KSC_Tracking_Station_Dish_South") return "TrackingStationDishSouth";
+        //        else if (currentVessel().landedAt == "KSC_Tracking_Station_Dish_North") return "TrackingStationDishNorth"; // very messy
+        //        else return currentVessel().landedAt; // you're still here?
+        //    }
+        //    else return ScienceUtil.GetExperimentBiome(currentBody(), currentVessel().latitude, currentVessel().longitude); //else give up, err...return squad's *cough* highly accurate biome *cough*
+        //}
 
         private ScienceSubject currentScienceSubject(ScienceExperiment experiment)
         {
