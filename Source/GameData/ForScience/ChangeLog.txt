@@ -1,4 +1,4 @@
-﻿v 1.1 - EVA science support
+﻿﻿v 1.1 - EVA science support
 - Science will be automaticly gathered while EVA.
 
 v 1.0 - Release Version!
