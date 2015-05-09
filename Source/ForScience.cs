@@ -26,11 +26,7 @@ namespace ForScience
 
         // to do list
         //
-        // supress duplicate experiments from running - done
-        // reset non-rerunnable experiments after deploying the experiment (you can just docking jeb from a veseel with bob and the experiments will be already be available) - done-ish, see next
-        // timeout/handle experiment result notification windows automaticly, maybe suppress to toolbar window? - somewhat done, directly adding automaticly run experiments to avoid deplayexperiment issue
         // integrate science lab
-        // move all data to one container when docked - done
         // allow a user specified container to hold data
         // transmit data from probes automaticly
 
@@ -51,7 +47,7 @@ namespace ForScience
                         null,
                         null,
                         ApplicationLauncher.AppScenes.FLIGHT,
-                        GameDatabase.Instance.GetTexture("ForScience/Plugins/FS_active", false)
+                        GameDatabase.Instance.GetTexture("ForScience/Icons/FS_active", false)
                    );
             }
 
@@ -132,7 +128,7 @@ namespace ForScience
                         Debug.Log("[For Science] Skipping: Experiment is not available for this situation/atmosphere.");
 #endif
                     }
-                    else if (currentScienceValue(currentExperiment) == 0) // this experiment has no more value so we skip it
+                    else if (currentScienceValue(currentExperiment) < 0.1) // this experiment has no more value so we skip it
                     {
 #if DEBUG
                         Debug.Log("[For Science] Skipping: No more science is available: ");
@@ -295,13 +291,13 @@ namespace ForScience
             if (autoTransfer)
             {
                 autoTransfer = false;
-                icon = GameDatabase.Instance.GetTexture("ForScience/Plugins/FS_inactive", false); // change the red colored icon
+                icon = GameDatabase.Instance.GetTexture("ForScience/Icons/FS_inactive", false); // change the red colored icon
                 FSAppButton.SetTexture(icon);
             }
             else
             {
                 autoTransfer = true; // FIRE EVERYTHING!
-                icon = GameDatabase.Instance.GetTexture("ForScience/Plugins/FS_active", false); // change to the green colored icon
+                icon = GameDatabase.Instance.GetTexture("ForScience/Icons/FS_active", false); // change to the green colored icon
                 FSAppButton.SetTexture(icon);
             }
         }
