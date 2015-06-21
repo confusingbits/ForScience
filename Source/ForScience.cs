@@ -302,16 +302,11 @@ namespace ForScience
 
         private bool IsScientistOnBoard() // check if there is a scientist onboard so we can rerun things like goo or scijrs
         {
-            var returnvalue = false;
-            foreach (ProtoCrewMember kerbal in currentVessel().GetVesselCrew())
-            {
-                if (kerbal.experienceTrait.Title == "Scientist")
-                {
-                    returnvalue = true;
-                }
-                else returnvalue = false;
-            }
-            return returnvalue;
+            foreach (Part part in currentVessel().parts)
+                foreach (ProtoCrewMember kerbal in part.protoModuleCrew)
+                    if (kerbal.experienceTrait.Title == "Scientist")
+                        return true;
+            return false;
         }
     }
 }
