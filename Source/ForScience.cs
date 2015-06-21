@@ -164,22 +164,22 @@ namespace ForScience
                         );
         }
 
-        private Vessel currentVessel()
+        private static Vessel currentVessel()
         {
             return FlightGlobals.ActiveVessel;
         }
 
-        private CelestialBody currentBody()
+        private static CelestialBody currentBody()
         {
             return FlightGlobals.ActiveVessel.mainBody;
         }
 
-        private ExperimentSituations currentSituation()
+        private static ExperimentSituations currentSituation()
         {
             return ScienceUtil.GetExperimentSituation(FlightGlobals.ActiveVessel);
         }
 
-        public static string currentBiome()
+        private static string currentBiome()
         {
             if (FlightGlobals.ActiveVessel != null)
                 if (FlightGlobals.ActiveVessel.mainBody.BiomeMap != null)
@@ -263,7 +263,7 @@ namespace ForScience
 
         private bool StatesHaveChanged() // Track our vessel state, it is used for thread control to know when to fire off new experiments.
         {
-            if (currentVessel() != stateVessel | currentSituation() != stateSituation | currentBody() != stateBody | currentBiome() != stateBiome)
+            if (currentVessel() != stateVessel || currentBody() != stateBody || currentSituation() != stateSituation || currentBiome() != stateBiome)
             {
                 stateVessel = currentVessel();
                 stateBody = currentBody();
