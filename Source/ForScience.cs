@@ -11,7 +11,6 @@ namespace ForScience
     {
         //GUI
         private ApplicationLauncherButton FSAppButton = null;
-        private Texture icon = null;
 
         //states
         Vessel stateVessel = null;
@@ -21,7 +20,6 @@ namespace ForScience
 
         //thread control
         bool autoTransfer = true;
-        List<ModuleScienceExperiment> completedExperiments = new List<ModuleScienceExperiment>();
         System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
 
         // to do list
@@ -291,14 +289,14 @@ namespace ForScience
             if (autoTransfer)
             {
                 autoTransfer = false;
-                icon = GameDatabase.Instance.GetTexture("ForScience/Icons/FS_inactive", false); // change the red colored icon
-                FSAppButton.SetTexture(icon);
+                // change to the red colored icon
+                FSAppButton.SetTexture(GameDatabase.Instance.GetTexture("ForScience/Icons/FS_inactive", false));
             }
             else
             {
                 autoTransfer = true; // FIRE EVERYTHING!
-                icon = GameDatabase.Instance.GetTexture("ForScience/Icons/FS_active", false); // change to the green colored icon
-                FSAppButton.SetTexture(icon);
+                // change to the green colored icon
+                FSAppButton.SetTexture(GameDatabase.Instance.GetTexture("ForScience/Icons/FS_active", false));
             }
         }
 
