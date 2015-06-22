@@ -11,7 +11,6 @@ namespace ForScience
     {
         //GUI
         private ApplicationLauncherButton FSAppButton = null;
-        private Texture icon = null;
 
         //states
         Vessel stateVessel = null;
@@ -21,7 +20,6 @@ namespace ForScience
 
         //thread control
         bool autoTransfer = true;
-        List<ModuleScienceExperiment> completedExperiments = new List<ModuleScienceExperiment>();
         System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
 
         // to do list
@@ -166,22 +164,22 @@ namespace ForScience
                         );
         }
 
-        private Vessel currentVessel()
+        private static Vessel currentVessel()
         {
             return FlightGlobals.ActiveVessel;
         }
 
-        private CelestialBody currentBody()
+        private static CelestialBody currentBody()
         {
             return FlightGlobals.ActiveVessel.mainBody;
         }
 
-        private ExperimentSituations currentSituation()
+        private static ExperimentSituations currentSituation()
         {
             return ScienceUtil.GetExperimentSituation(FlightGlobals.ActiveVessel);
         }
 
-        public static string currentBiome()
+        private static string currentBiome()
         {
             if (FlightGlobals.ActiveVessel != null)
                 if (FlightGlobals.ActiveVessel.mainBody.BiomeMap != null)
@@ -265,7 +263,7 @@ namespace ForScience
 
         private bool StatesHaveChanged() // Track our vessel state, it is used for thread control to know when to fire off new experiments.
         {
-            if (currentVessel() != stateVessel | currentSituation() != stateSituation | currentBody() != stateBody | currentBiome() != stateBiome)
+            if (currentVessel() != stateVessel || currentBody() != stateBody || currentSituation() != stateSituation || currentBiome() != stateBiome)
             {
                 stateVessel = currentVessel();
                 stateBody = currentBody();
@@ -291,29 +289,24 @@ namespace ForScience
             if (autoTransfer)
             {
                 autoTransfer = false;
-                icon = GameDatabase.Instance.GetTexture("ForScience/Icons/FS_inactive", false); // change the red colored icon
-                FSAppButton.SetTexture(icon);
+                // change to the red colored icon
+                FSAppButton.SetTexture(GameDatabase.Instance.GetTexture("ForScience/Icons/FS_inactive", false));
             }
             else
             {
                 autoTransfer = true; // FIRE EVERYTHING!
-                icon = GameDatabase.Instance.GetTexture("ForScience/Icons/FS_active", false); // change to the green colored icon
-                FSAppButton.SetTexture(icon);
+                // change to the green colored icon
+                FSAppButton.SetTexture(GameDatabase.Instance.GetTexture("ForScience/Icons/FS_active", false));
             }
         }
 
         private bool IsScientistOnBoard() // check if there is a scientist onboard so we can rerun things like goo or scijrs
         {
-            var returnvalue = false;
-            foreach (ProtoCrewMember kerbal in currentVessel().GetVesselCrew())
-            {
-                if (kerbal.experienceTrait.Title == "Scientist")
-                {
-                    returnvalue = true;
-                }
-                else returnvalue = false;
-            }
-            return returnvalue;
+            foreach (Part part in currentVessel().parts)
+                foreach (ProtoCrewMember kerbal in part.protoModuleCrew)
+                    if (kerbal.experienceTrait.Title == "Scientist")
+                        return true;
+            return false;
         }
     }
 }
