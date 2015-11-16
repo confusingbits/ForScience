@@ -162,10 +162,12 @@ namespace ForScience
                         currentExperiment.xmitDataScalar,
                         0f,
                         currentScienceSubject(currentExperiment.experiment).id,
-                        currentScienceSubject(currentExperiment.experiment).title
+                        currentScienceSubject(currentExperiment.experiment).title,
+                        false,
+                        currentExperiment.part.flightID
                         );
         }
-
+    
         private Vessel currentVessel()
         {
             return FlightGlobals.ActiveVessel;
