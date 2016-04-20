@@ -68,12 +68,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>set source="C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program"
-set target="C:\Users\mcore\Desktop\KSPTest"
-set resource="C:\Users\mcore\Source\Repos\ForScience\Source\GameData\ForScience"
-xcopy %25source%25 %25target%25 /e/d/i/y
-xcopy $(OutDir)ForScience.dll %25target%25\GameData\ForScience\Plugins\ /e/d/i/y
-xcopy %25resource%25 %25target%25\GameData\ForScience\ /e/d/i/y</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

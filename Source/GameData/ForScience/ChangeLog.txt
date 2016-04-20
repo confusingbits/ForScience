@@ -1,4 +1,7 @@
-﻿v 1.2 - Science value filtering adjustment
+﻿v 1.3 - Support for KSP v 1.1
+- Fixed an issue with experiments running before the vessel was fully loaded.
+
+v 1.2 - Science value filtering adjustment
 - Increased the minimum value to run an experiment to .1 science.
 
 v 1.1 - EVA science support

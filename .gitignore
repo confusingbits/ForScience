@@ -172,3 +172,5 @@ UpgradeLog*.htm
 
 # Microsoft Fakes
 FakesAssemblies/
+/Source/GameData/ForScience/Icons/Thumbs.db
+/GameData/ForScience/Icons/Thumbs.db
