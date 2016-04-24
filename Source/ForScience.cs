@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using System;
 
 namespace ForScience
 {
@@ -27,13 +28,21 @@ namespace ForScience
         // allow a user specified container to hold data
         // transmit data from probes automaticly
 
-        void OnGUI()
+        void Awake()
         {
-            // we have to do this here because apparently the app launcher events don't load at the right time, so we just check for ready here and then create the toolbar.
+            GameEvents.onGUIApplicationLauncherReady.Add(setupAppButton);
+        }
 
-            if (ApplicationLauncher.Ready && FSAppButton == null)
+        void OnDestroy()
+        {
+            GameEvents.onGUIApplicationLauncherReady.Remove(setupAppButton);
+            if (FSAppButton != null) ApplicationLauncher.Instance.RemoveModApplication(FSAppButton);
+        }
+        void setupAppButton()
+        {
+
+            if (FSAppButton == null)
             {
-
                 FSAppButton = ApplicationLauncher.Instance.AddModApplication(
 
                        onTrue: toggleCollection,
@@ -43,7 +52,7 @@ namespace ForScience
                        onEnable: null,
                        onDisable: null,
                        visibleInScenes: ApplicationLauncher.AppScenes.FLIGHT,
-                       texture: GameDatabase.Instance.GetTexture("ForScience/Icons/FS_active", false)
+                       texture: getIconTexture(autoTransfer)
                    );
             }
 
@@ -52,12 +61,14 @@ namespace ForScience
         void FixedUpdate() // running in physics update so that the vessel is always in a valid state to check for science.
         {
             // this is the primary logic that controls when to do what, so we aren't contstantly eating cpu
-            if (FlightGlobals.ActiveVessel.FindPartModulesImplementing<ModuleScienceContainer>().Count() == 0) // Check if any science containers are on the vessel, if not, remove the app button
+            if (FlightGlobals.ActiveVessel.FindPartModulesImplementing<ModuleScienceContainer>().Count() == 0)
             {
-                ApplicationLauncher.Instance.RemoveModApplication(FSAppButton);
+                // Check if any science containers are on the vessel, if not, remove the app button
+                if (FSAppButton != null) ApplicationLauncher.Instance.RemoveModApplication(FSAppButton);
             }
             else if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER | HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX) // only modes with science mechanics will run
             {
+                if (FSAppButton == null) setupAppButton();
                 if (autoTransfer) // if we've enabled the app to run, on by default, the toolbar button toggles this.
                 {
                     TransferScience();// always move experiment data to science container, mostly for manual experiments
@@ -68,12 +79,6 @@ namespace ForScience
                 }
             }
 
-        }
-
-        void OnDestroy() // we have to clear the toolbar button ondestroy or you get multiple toolbars when you switch vessel, also i'm sure its a good practice, or some salty programmer stuff
-        {
-            ApplicationLauncher.Instance.RemoveModApplication(FSAppButton);
-            FSAppButton = null;
         }
 
         void TransferScience() // automaticlly find, transer and consolidate science data on the vessel
@@ -94,21 +99,24 @@ namespace ForScience
         {
             if (GetExperimentList() == null) // hey, it can happen!
             {
-                Debug.Log("[ForScience!] GetExperimentList() was null.");
+                Debug.Log("[ForScience!] There are no experiments.");
             }
             else
             {
-                foreach (ModuleScienceExperiment currentExperiment in GetExperimentList()) // loop through all the experiments onboard, checking each one for valid experiments to run
+                foreach (ModuleScienceExperiment currentExperiment in GetExperimentList()) // loop through all the experiments onboard
                 {
-
 
                     Debug.Log("[ForScience!] Checking experiment: " + currentScienceSubject(currentExperiment.experiment).id);
 
-                    if (ActiveContainer().HasData(newScienceData(currentExperiment))) // we have the same experiment data onboard, so we skip it
+                    if (ActiveContainer().HasData(newScienceData(currentExperiment))) // skip data we already have onboard
                     {
 
                         Debug.Log("[ForScience!] Skipping: We already have that data onboard.");
 
+                    }
+                    else if (!surfaceSamplesUnlocked() && currentExperiment.experiment.id == "surfaceSample") // check to see is surface samples are unlocked
+                    {
+                        Debug.Log("[ForScience!] Skipping: Surface Samples are not unlocked.");
                     }
                     else if (!currentExperiment.rerunnable && !IsScientistOnBoard()) // no cheating goo and materials here
                     {
@@ -139,15 +147,20 @@ namespace ForScience
             }
         }
 
-        //lots of little helper functions to make the main code readable
-        float currentScienceValue(ModuleScienceExperiment currentExperiment)
+        private bool surfaceSamplesUnlocked() // checking that the appropriate career unlocks are flagged
+        {
+            return GameVariables.Instance.UnlockedEVA(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex))
+                && GameVariables.Instance.UnlockedFuelTransfer(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.ResearchAndDevelopment));
+        }
+
+        float currentScienceValue(ModuleScienceExperiment currentExperiment) // the ammount of science an experiment should return
         {
             return ResearchAndDevelopment.GetScienceValue(
                                     currentExperiment.experiment.baseValue * currentExperiment.experiment.dataScale,
                                     currentScienceSubject(currentExperiment.experiment));
         }
 
-        ScienceData newScienceData(ModuleScienceExperiment currentExperiment)
+        ScienceData newScienceData(ModuleScienceExperiment currentExperiment) // construct our own science data for an experiment
         {
             return new ScienceData(
                        amount: currentExperiment.experiment.baseValue * currentScienceSubject(currentExperiment.experiment).dataScale,
@@ -158,7 +171,7 @@ namespace ForScience
                        );
         }
 
-        Vessel currentVessel()
+        Vessel currentVessel() // dur :P
         {
             return FlightGlobals.ActiveVessel;
         }
@@ -173,7 +186,7 @@ namespace ForScience
             return ScienceUtil.GetExperimentSituation(FlightGlobals.ActiveVessel);
         }
 
-        string currentBiome()
+        string currentBiome() // some crazy nonsense to get the actual biome string
         {
             if (FlightGlobals.ActiveVessel != null)
                 if (FlightGlobals.ActiveVessel.mainBody.BiomeMap != null)
@@ -207,7 +220,7 @@ namespace ForScience
             return FlightGlobals.ActiveVessel.FindPartModulesImplementing<ModuleScienceContainer>(); // list of all experiments onboard
         }
 
-        bool StatesHaveChanged() // Track our vessel state, it is used for thread control to know when to fire off new experiments.
+        bool StatesHaveChanged() // Track our vessel state, it is used for thread control to know when to fire off new experiments since there is no event for this
         {
             if (currentVessel() != stateVessel | currentSituation() != stateSituation | currentBody() != stateBody | currentBiome() != stateBiome)
             {
@@ -217,31 +230,25 @@ namespace ForScience
                 stateBiome = currentBiome();
                 stopwatch.Reset();
                 stopwatch.Start();
-            }
-
-            if (stopwatch.ElapsedMilliseconds > 100) // throttling detection to kill transient states.
-            {
-                stopwatch.Reset();
-
-                Debug.Log("[ForScience!] Vessel in new experiment state.");
-
                 return true;
             }
             else return false;
+
+            //if (stopwatch.ElapsedMilliseconds > 100) // throttling detection to kill transient states.
+            //{
+            //    stopwatch.Reset();
+
+            //    Debug.Log("[ForScience!] Vessel in new experiment state.");
+
+            //    return true;
+            //}
+            //else return false;
         }
 
         void toggleCollection() // This is our main toggle for the logic and changes the icon between green and red versions on the bar when it does so.
         {
-            if (autoTransfer)
-            {
-                autoTransfer = false;
-                FSAppButton.SetTexture(GameDatabase.Instance.GetTexture("ForScience/Icons/FS_inactive", false)); // change to the red colored icon
-            }
-            else
-            {
-                autoTransfer = true; // FIRE EVERYTHING!
-                FSAppButton.SetTexture(GameDatabase.Instance.GetTexture("ForScience/Icons/FS_active", false)); // change to the green colored icon
-            }
+            autoTransfer = !autoTransfer;
+            FSAppButton.SetTexture(getIconTexture(autoTransfer));
         }
 
         bool IsScientistOnBoard() // check if there is a scientist onboard so we can rerun things like goo or scijrs
@@ -251,6 +258,12 @@ namespace ForScience
                 if (kerbal.experienceTrait.Title == "Scientist") return true;
             }
             return false;
+        }
+
+        Texture2D getIconTexture(bool b) // just returns the correct icon for the given state
+        {
+            if (b) return GameDatabase.Instance.GetTexture("ForScience/Icons/FS_active", false);
+            else return GameDatabase.Instance.GetTexture("ForScience/Icons/FS_inactive", false);
         }
     }
 }
