@@ -1,4 +1,7 @@
-﻿v 1.4 - Bugfixapaloosa
+﻿v 1.4.1 - KSP v1.2 Support
+- Fixed ScienceData signature
+
+v 1.4 - Bugfixapaloosa
 - Fixed surface sample being improperly run without the correct unlocks in career
 - Fixed for probe shenanigan.
 - Removed the now unnecessary biome detection throttling.

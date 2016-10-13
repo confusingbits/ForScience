@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using System;
 
 namespace ForScience
 {
@@ -10,12 +9,12 @@ namespace ForScience
     class ForScience : MonoBehaviour
     {
         //GUI
-        ApplicationLauncherButton FSAppButton = null;
+        ApplicationLauncherButton FSAppButton;
 
         //states
-        Vessel stateVessel = null;
-        CelestialBody stateBody = null;
-        string stateBiome = null;
+        Vessel stateVessel;
+        CelestialBody stateBody;
+        string stateBiome;
         ExperimentSituations stateSituation = 0;
 
         //thread control
@@ -89,7 +88,7 @@ namespace ForScience
                 Debug.Log("[ForScience!] Transfering science to container.");
 
                 ActiveContainer().StoreData(GetExperimentList().Cast<IScienceDataContainer>().ToList(), true); // this is what actually moves the data to the active container
-                List<ModuleScienceContainer> containerstotransfer = GetContainerList(); // a temporary list of our containers
+                var containerstotransfer = GetContainerList(); // a temporary list of our containers
                 containerstotransfer.Remove(ActiveContainer()); // we need to remove the container we storing the data in because that would be wierd and buggy
                 ActiveContainer().StoreData(containerstotransfer.Cast<IScienceDataContainer>().ToList(), true); // now we store all data from other containers
             }
@@ -165,7 +164,7 @@ namespace ForScience
             return new ScienceData(
                        amount: currentExperiment.experiment.baseValue * currentScienceSubject(currentExperiment.experiment).dataScale,
                        xmitValue: currentExperiment.xmitDataScalar,
-                       labBoost: 0f,
+                       xmitBonus: 0f,
                        id: currentScienceSubject(currentExperiment.experiment).id,
                        dataName: currentScienceSubject(currentExperiment.experiment).title
                        );
