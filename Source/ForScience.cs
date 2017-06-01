@@ -201,7 +201,7 @@ namespace ForScience
         {
             string fixBiome = string.Empty; // some biomes don't have 4th string, so we just put an empty in to compare strings later
             if (experiment.BiomeIsRelevantWhile(currentSituation())) fixBiome = currentBiome();// for those that do, we add it to the string
-            return ResearchAndDevelopment.GetExperimentSubject(experiment, currentSituation(), currentBody(), fixBiome);//ikr!, we pretty much did all the work already, jeez
+            return ResearchAndDevelopment.GetExperimentSubject(experiment, currentSituation(), currentBody(), fixBiome, null);//ikr!, we pretty much did all the work already, jeez
         }
 
         ModuleScienceContainer ActiveContainer() // set the container to gather all science data inside, usualy this is the root command pod of the oldest vessel
