@@ -1,4 +1,4 @@
-﻿v 1.5.0 - KSP v.13 support
+﻿v 1.5.0 - KSP v1.3 support
 - Fixed signature for GetExperimentSubject
 
 v 1.4.1 - KSP v1.2 Support
