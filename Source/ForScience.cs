@@ -60,7 +60,7 @@ namespace ForScience
         void FixedUpdate() // running in physics update so that the vessel is always in a valid state to check for science.
         {
             // this is the primary logic that controls when to do what, so we aren't contstantly eating cpu
-            if (FlightGlobals.ActiveVessel.FindPartModulesImplementing<ModuleScienceContainer>().Count() == 0)
+            if (FlightGlobals.ActiveVessel.FindPartModulesImplementing<ModuleScienceContainer>().Any() == false)
             {
                 // Check if any science containers are on the vessel, if not, remove the app button
                 if (FSAppButton != null) ApplicationLauncher.Instance.RemoveModApplication(FSAppButton);

@@ -1,4 +1,7 @@
-﻿v 1.5.0 - KSP v1.3 support
+﻿v 1.5.1 - KSP v1.3 support
+- Performance improvements
+
+v 1.5.0 - KSP v1.3 support
 - Fixed signature for GetExperimentSubject
 
 v 1.4.1 - KSP v1.2 Support
