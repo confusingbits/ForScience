@@ -129,6 +129,10 @@ namespace ForScience
                         Debug.Log("[ForScience!] Skipping: Experiment is not available for this situation/atmosphere.");
 
                     }
+                    
+                    // TODO:  either check if the experiment is vald for the onboard science lab, OR just run the experiment if 
+                    // there is a science lab onboard , since science labs make use of the data value, not the science value
+                    
                     else if (CurrentScienceValue(currentExperiment) < 0.1) // this experiment has no more value so we skip it
                     {
 
