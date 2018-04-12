@@ -123,17 +123,21 @@ namespace ForScience
                         Debug.Log("[ForScience!] Skipping: Experiment is not available for this situation/atmosphere.");
 
                     }
-                    else if (CurrentScienceValue(currentExperiment) < 0.1) // this experiment has no more value so we skip it
+                    // TODO - Science Labs can use zero value science , so do not skip it if there is a lab on board
+                    // as a temporary workaround, if there is a scientist on board it will still gather the data.
+
+                    else if (CurrentScienceValue(currentExperiment) >= 0.1 || IsScientistOnBoard()) 
                     {
 
-                        Debug.Log("[ForScience!] Skipping: No more science is available: ");
-
-                    }
-                    else
-                    {
                         Debug.Log("[ForScience!] Running experiment: " + CurrentScienceSubject(currentExperiment.experiment).id);
 
-                        ActiveContainer().AddData(NewScienceData(currentExperiment)); //manually add data to avoid deployexperiment state issues
+                        //manually add data to avoid deployexperiment state issues
+                        ActiveContainer().AddData(NewScienceData(currentExperiment)); 
+
+                    }
+                    else // this experiment has no more value so we skip it
+                    {
+                        Debug.Log("[ForScience!] Skipping: No more science is available: ");
                     }
 
                 }

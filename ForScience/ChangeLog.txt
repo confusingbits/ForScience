@@ -1,0 +1,51 @@
+﻿v 1.5.1 - KSP v1.3 support
+- Performance improvements
+
+v 1.5.0 - KSP v1.3 support
+- Fixed signature for GetExperimentSubject
+
+v 1.4.1 - KSP v1.2 Support
+- Fixed ScienceData signature
+
+v 1.4 - Bugfixapaloosa
+- Fixed surface sample being improperly run without the correct unlocks in career
+- Fixed for probe shenanigan.
+- Removed the now unnecessary biome detection throttling.
+- Fixed an issue where the button (color) could get out of sync with the logic state
+- Fixed an issue with switching to other vessels in range.
+- Fixed an issue with flickering buttons on probes and when a vessel is destroyed
+
+v 1.3 - Support for KSP v 1.1
+- Fixed an issue with experiments running before the vessel was fully loaded.
+
+v 1.2 - Science value filtering adjustment
+- Increased the minimum value to run an experiment to .1 science.
+
+v 1.1 - EVA science support
+- Science will be automaticly gathered while EVA.
+
+v 1.0 - Release Version!
+- Reset goo/scijr when scientist is onboard
+- Much improved biome detection and throttling.
+- Suppressed (actually bypassed altogether) experiment result windows
+- Suppressed duplicate results.
+- consolidated data on docking.
+- Many code improvements
+
+v 0.24.2-1 Bug fixes
+- Science mode support
+- Disabled when no science container is found. (temporary)
+
+v 0.24-1 - Experiment Filtering
+- Experiments without available science will no longer run automatically. (Usually.)
+- Plugin and window are disabled in sandbox mode.
+
+v 0.23.5-2 - Experiment Automation
+
+ - Experiments will now run automatically when enabled.
+
+v0.23.5-1 - Initial WIP release.
+
+- Automatic science container selection.
+- Automatic science experiment collection.
+- Temporary user interface to toggle automatic science data collection
