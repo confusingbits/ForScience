@@ -174,3 +174,4 @@ UpgradeLog*.htm
 FakesAssemblies/
 /Source/GameData/ForScience/Icons/Thumbs.db
 /GameData/ForScience/Icons/Thumbs.db
+/Source/.vs/ForScience/v15/Server/sqlite3

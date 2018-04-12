@@ -21,12 +21,6 @@ namespace ForScience
         bool autoTransfer = true;
         System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
 
-        // to do list
-        //
-        // integrate science lab
-        // allow a user specified container to hold data
-        // transmit data from probes automaticly
-
         void Awake()
         {
             GameEvents.onGUIApplicationLauncherReady.Add(SetupAppButton);
@@ -117,7 +111,7 @@ namespace ForScience
                     {
                         Debug.Log("[ForScience!] Skipping: Surface Samples are not unlocked.");
                     }
-                    else if (!currentExperiment.rerunnable && !IsScientistOnBoard()) // no cheating goo and materials here
+                    else if (!currentExperiment.rerunnable && !IsScientistOnBoard) // no cheating goo and materials here
                     {
 
                         Debug.Log("[ForScience!] Skipping: Experiment is not repeatable.");
@@ -232,16 +226,6 @@ namespace ForScience
                 return true;
             }
             else return false;
-
-            //if (stopwatch.ElapsedMilliseconds > 100) // throttling detection to kill transient states.
-            //{
-            //    stopwatch.Reset();
-
-            //    Debug.Log("[ForScience!] Vessel in new experiment state.");
-
-            //    return true;
-            //}
-            //else return false;
         }
 
         void ToggleCollection() // This is our main toggle for the logic and changes the icon between green and red versions on the bar when it does so.
@@ -250,14 +234,8 @@ namespace ForScience
             FSAppButton.SetTexture(GetIconTexture(autoTransfer));
         }
 
-        bool IsScientistOnBoard() // check if there is a scientist onboard so we can rerun things like goo or scijrs
-        {
-            foreach (ProtoCrewMember kerbal in CurrentVessel().GetVesselCrew())
-            {
-                if (kerbal.experienceTrait.Title == "Scientist") return true;
-            }
-            return false;
-        }
+        // check if there is a scientist onboard so we can rerun things like goo or scijrs
+        bool IsScientistOnBoard => CurrentVessel().GetVesselCrew().Any(k => k.trait == KerbalRoster.scientistTrait);
 
         Texture2D GetIconTexture(bool b) // just returns the correct icon for the given state
         {
