@@ -123,7 +123,7 @@ namespace ForScience
                         Debug.Log("[ForScience!] Skipping: Experiment is not available for this situation/atmosphere.");
 
                     }
-                    else if (CurrentScienceValue(currentExperiment) < 0.1) // this experiment has no more value so we skip it
+                    else if (CurrentScienceValue(currentExperiment) < 0.01) // this experiment has no more value so we skip it
                     {
 
                         Debug.Log("[ForScience!] Skipping: No more science is available: ");
